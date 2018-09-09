@@ -1,0 +1,3 @@
+[submodule "libs/libnes"]
+	path = libs/libnes
+	url = git@github.com_gamma-omg:gamma-omg/libnes.git
