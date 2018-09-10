@@ -3,13 +3,51 @@
 #include <QOpenGLPixelTransferOptions>
 #include "ScreenWidget.h"
 
-const GLfloat ScreenWidget::SCREEN[] = { -1, -1, 0, 0, 1,
-                                         -1, 1, 0, 0, 0,
-                                         1, 1, 0, 1, 0,
-                                         -1, -1, 0, 0, 1,
-                                         1, 1, 0, 1, 0,
-                                         1, -1, 0, 1, 1 };
+ScreenWidget::VertexData::VertexData(const QVector3D& pos, const QVector2D& uv)
+    : pos(pos)
+    , uv(uv)
+{
+}
 
+ScreenWidget::Mesh::Mesh(std::initializer_list<VertexData> vertices)
+    : _buffer(new GLfloat[vertices.size() * 5])
+    , _bufferSize(sizeof(GLfloat) * vertices.size() * 5)
+
+{
+    int index = 0;
+    for (auto& vertex : vertices)
+    {
+        _buffer[index++] = vertex.pos.x();
+        _buffer[index++] = vertex.pos.y();
+        _buffer[index++] = vertex.pos.z();
+        _buffer[index++] = vertex.uv.x();
+        _buffer[index++] = vertex.uv.y();
+    }
+}
+
+ScreenWidget::Mesh::~Mesh()
+{
+    delete[] _buffer;
+}
+
+const GLfloat* ScreenWidget::Mesh::getBuffer() const
+{
+    return _buffer;
+}
+
+int ScreenWidget::Mesh::getBufferSize() const
+{
+    return _bufferSize;
+}
+
+const ScreenWidget::Mesh ScreenWidget::SCREEN({
+    { QVector3D(-1, -1, 0), QVector2D(0, 1) },
+    { QVector3D(-1,  1, 0), QVector2D(0, 0) },
+    { QVector3D( 1,  1, 0), QVector2D(1, 0) },
+    { QVector3D(-1, -1, 0), QVector2D(0, 1) },
+    { QVector3D( 1,  1, 0), QVector2D(1, 0) },
+    { QVector3D( 1, -1, 0), QVector2D(1, 1) }
+});
 
 ScreenWidget::ScreenWidget(QWidget* parent)
     : QOpenGLWidget(parent)
@@ -33,7 +71,7 @@ ScreenWidget::~ScreenWidget()
 
 void ScreenWidget::renderFrame(int width, int height, const uint32_t* frameBuffer)
 {
-    static const auto pxFormat = QOpenGLTexture::RGBA;
+    static const auto pxFormat = QOpenGLTexture::BGRA;
     static const auto pxType = QOpenGLTexture::UInt8;
 
     if (!_texture)
@@ -113,11 +151,11 @@ void ScreenWidget::createVertexBuffer()
 
     _vbo.create();
     _vbo.bind();
-    _vbo.allocate(SCREEN, sizeof(GLfloat) * 36);
+    _vbo.allocate(SCREEN.getBuffer(), SCREEN.getBufferSize());
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), nullptr);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), reinterpret_cast<void*>(3 * sizeof(GLfloat)));
 
     _vbo.release();

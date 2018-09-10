@@ -41,7 +41,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/libs/libnes/bin/release/32 -lnescore
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/libs/libnes/bin/debug/32 -lnescore
-else:unix: LIBS += -L$$PWD/libs/libnes/ -lnescore -lopengl32
+else:unix: LIBS += -L$$PWD/libs/libnes/bin/debug/64 -lnescore
 
 INCLUDEPATH += $$PWD/libs/libnes/src
 DEPENDPATH += $$PWD/libs/libnes/src

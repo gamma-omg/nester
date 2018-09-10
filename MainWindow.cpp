@@ -17,8 +17,6 @@ MainWindow::MainWindow(QWidget *parent)
     _updateTimer->start(16);
 
     _nes->setRenderCallback(_ui->screen);
-
-    setAnimated(false);
 }
 
 MainWindow::~MainWindow()
